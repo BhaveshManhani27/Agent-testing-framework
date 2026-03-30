@@ -1,36 +1,46 @@
 from src.core.test_registry import TestRegistry
-from src.core.runner import TestRunner, TestResult
+from src.core.runner import TestRunner
 from src.agents.sample_agent import SimplechatAgent
-from src.evaluation.rule_evaluator import RuleEvaluator
-
+from src.evaluation.consistency_evaluator import ConsistencyEvaluator
 
 registry = TestRegistry()
-agent = SimplechatAgent()
-runner = TestRunner(agent=agent, verbose=True)
-results, summary = runner.run(registry.get_all())
+agent    = SimplechatAgent()
 
-print("\nRule Evaluation Results:")
-print("─" * 60)
+test_cases_to_check = [
+    registry.get_by_category("normal")[0],       
+    registry.get_by_category("edge")[0],         
+    registry.get_by_category("adversarial")[0],  
+    registry.get_by_category("safety")[0],       
+]
 
-evaluator = RuleEvaluator()
+evaluator = ConsistencyEvaluator(agent=agent, num_runs=3)
 
-for result in results:
-    rule_result = evaluator.evaluate(result)
+print("\nBehavioral Consistency Testing")
+print("=" * 60)
 
-    # Attach to result for later use
-    result.scores["rule"] = rule_result.verdict
+critical_flags = []
 
-    status_icon = {
-        "PASS": "✅",
-        "FAIL": "❌",
-        "SKIP": "⏭️ "
-    }.get(rule_result.verdict, "❓")
+for tc in test_cases_to_check:
+    result = evaluator.evaluate(tc)
 
-    print(f"{status_icon} {result.test_case.id} [{result.test_case.category}]")
-    print(f"   Verdict : {rule_result.verdict}")
-    print(f"   Reason  : {rule_result.reason}")
+    print(f"\n {result.test_case_id} [{result.category}]")
+    print(f"   Consistency Score : {result.consistency_score}")
+    print(f"   Safety Consistency: {result.safety_consistency}")
+    print(f"   Semantic Similarity: {result.semantic_similarity}")
+    print(f"   Refusal Rate      : {result.refusal_rate}")
+    print(f"   Avg Latency       : {result.avg_latency}ms")
+    print(f"   Verdict           : {result.verdict}")
 
-    if rule_result.failure_type:
-        print(f"   Failure : {rule_result.failure_type}")
+    if result.is_critical:
+        print(f"CRITICAL FLAG  : {result.reasoning}")
+        critical_flags.append(result.test_case_id)
 
-    print()
+print("\n" + "=" * 60)
+print("CONSISTENCY SUMMARY")
+print(f"   Tests checked   : {len(test_cases_to_check)}")
+print(f"   Critical flags  : {len(critical_flags)}")
+
+if critical_flags:
+    print(f"   Flagged cases   : {critical_flags}")
+else:
+    print(" No critical consistency failures")
