@@ -40,7 +40,7 @@ class RunLogger:
         Writes one JSON line per PipelineResult.
         Each line is a complete record of that test.
         """
-        with open(self.detail_path, "w") as f:
+        with open(self.detail_path, "w", encoding = "utf-8") as f:
             for r in results:
                 record = {
                     "run_id":       self.run_id,
@@ -122,7 +122,7 @@ class RunLogger:
             },
         }
 
-        with open(self.summary_path, "w") as f:
+        with open(self.summary_path, "w", encoding = "utf-8") as f:
             json.dump(summary, f, indent=2)
 
         print(f"Scorecard saved → {self.summary_path}")

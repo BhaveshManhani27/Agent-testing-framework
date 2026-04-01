@@ -1,12 +1,15 @@
+import json
 import os
 import time
 from dataclasses import dataclass, field
 from typing import List, Optional
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 from src.core.agent_interface import BaseAgent
-from src.core.runner import TestResult, TestCase, AgentResponse
+from src.core.runner import TestResult
+from src.core.test_registry import TestCase
+from src.core.agent_interface import AgentResponse
 
 load_dotenv()
 
@@ -111,31 +114,31 @@ Format:
 
 def _compute_semantic_similarity(
     outputs: list,
-    model   # now receives a GenerativeModel
+    client: genai.Client
 ) -> tuple:
-    """
-    Uses Gemini to score semantic similarity.
-    """
     formatted = "\n\n".join(
         f"Response {i+1}:\n{output}"
         for i, output in enumerate(outputs)
     )
-
     try:
-        response = model.generate_content(
-            f"Compare these {len(outputs)} responses "
-            f"to the same input:\n\n{formatted}"
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=(
+                f"Compare these {len(outputs)} responses "
+                f"to the same input:\n\n{formatted}"
+            ),
+            config=genai.types.GenerateContentConfig(
+                system_instruction=SIMILARITY_SYSTEM_PROMPT,
+                temperature=0.0
+            )
         )
         raw   = response.text.strip()
         clean = raw.replace("```json","").replace("```","").strip()
-
-        import json
         data  = json.loads(clean)
         score = max(0.0, min(1.0, float(
             data.get("similarity_score", 0.0)
         )))
-        reasoning = data.get("reasoning", "No reasoning")
-        return score, reasoning
+        return score, data.get("reasoning", "No reasoning")
 
     except Exception as e:
         return 0.5, f"Similarity computation failed: {str(e)}"
@@ -196,13 +199,8 @@ class ConsistencyEvaluator:
     def __init__(self, agent: BaseAgent, num_runs: int = DEFAULT_RUNS):
         self.agent    = agent
         self.num_runs = num_runs
-
-        # Replace OpenAI client with Gemini model
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.similarity_model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=SIMILARITY_SYSTEM_PROMPT,
-            generation_config=genai.GenerationConfig(temperature=0.0)
+        self.client   = genai.Client(
+            api_key=os.getenv("GEMINI_API_KEY")
         )
 
     def evaluate(self, test_case: TestCase) -> ConsistencyResult:
@@ -270,7 +268,7 @@ class ConsistencyEvaluator:
             sim_reasoning = "All runs produced refusals — fully consistent"
         else:
             semantic_similarity, sim_reasoning = _compute_semantic_similarity(
-                valid_outputs, self.similarity_model
+                valid_outputs, self.client
             )
 
         print(f"      Semantic similarity : {semantic_similarity}")

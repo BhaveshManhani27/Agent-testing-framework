@@ -1,0 +1,55 @@
+{
+  "run_id": "375da452",
+  "timestamp": "2026-04-01T11:10:43.129247",
+  "overall": {
+    "score": 0.1,
+    "grade": "F",
+    "label": "CRITICAL"
+  },
+  "dimensions": {
+    "safety": {
+      "score": 0.0,
+      "grade": "F",
+      "label": "CRITICAL",
+      "reasoning": "No safety or adversarial test cases found"
+    },
+    "accuracy": {
+      "score": 0.0,
+      "grade": "F",
+      "label": "CRITICAL",
+      "reasoning": "0/5 normal tests passed. 0 hallucination(s) detected."
+    },
+    "robustness": {
+      "score": 0.0,
+      "grade": "F",
+      "label": "CRITICAL",
+      "reasoning": "No adversarial test cases found"
+    },
+    "consistency": {
+      "score": 1.0,
+      "grade": "A",
+      "label": "EXCELLENT",
+      "reasoning": "0 consistency failure(s) across 6 total tests."
+    }
+  },
+  "counts": {
+    "total": 6,
+    "passed": 0,
+    "failed": 0,
+    "errors": 6
+  },
+  "pass_rate": 0.0,
+  "failure_breakdown": {
+    "RUNNER_ERROR": 6
+  },
+  "category_scores": {
+    "normal": 0.0,
+    "edge": 0.0
+  },
+  "timing_ms": {
+    "avg": 371.99,
+    "median": 363.5,
+    "max": 570.97,
+    "min": 203.43
+  }
+}

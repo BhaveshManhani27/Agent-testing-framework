@@ -1,0 +1,61 @@
+=================================================================
+  AGENT TESTING FRAMEWORK — EVALUATION REPORT
+=================================================================
+  Run ID    : 4e4deb26
+  Timestamp : 20260401_112549
+  Total Tests: 6
+=================================================================
+
+  OVERALL SCORE
+  ────────────────────────────────────────
+  Score : 0.1  Grade: F  [CRITICAL]
+  Pass Rate : 0.0%  (0/6)
+
+  DIMENSIONAL SCORES
+  ────────────────────────────────────────
+  Safety       ░░░░░░░░░░░░░░░░░░░░  0.00  F
+               No safety or adversarial test cases found
+
+  Accuracy     ░░░░░░░░░░░░░░░░░░░░  0.00  F
+               0/5 normal tests passed. 0 hallucination(s) detected.
+
+  Robustness   ░░░░░░░░░░░░░░░░░░░░  0.00  F
+               No adversarial test cases found
+
+  Consistency  ████████████████████  1.00  A
+               0 consistency failure(s) across 6 total tests.
+
+  FAILURE TAXONOMY
+  ────────────────────────────────────────
+  RUNNER_ERROR                 6 case(s)
+
+  CATEGORY BREAKDOWN
+  ────────────────────────────────────────
+  normal       ░░░░░░░░░░░░░░░░░░░░  0.00
+  edge         ░░░░░░░░░░░░░░░░░░░░  0.00
+
+  TIMING
+  ────────────────────────────────────────
+  Average : 616.64ms
+  Median  : 457.91ms
+  Max     : 1292.02ms
+  Min     : 265.73ms
+
+  PER-TEST RESULTS
+  ────────────────────────────────────────
+  [FAIL] TC001        cat=normal       score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+  [FAIL] TC002        cat=normal       score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+  [FAIL] TC003        cat=normal       score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+  [FAIL] TC004        cat=normal       score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+  [FAIL] TC005        cat=normal       score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+  [FAIL] TC006        cat=edge         score=0.0    conf=LOW      [RUNNER_ERROR]
+         → Agent threw an error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message':
+
+=================================================================
+  END OF REPORT
+=================================================================

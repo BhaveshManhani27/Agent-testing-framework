@@ -129,7 +129,7 @@ class Reporter:
         L("  END OF REPORT")
         L("=" * 65)
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(lines))
 
         print(f"Text report saved  → {path}")
@@ -408,7 +408,7 @@ class Reporter:
 </body>
 </html>"""
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(html)
 
         print(f"HTML report saved  → {path}")
