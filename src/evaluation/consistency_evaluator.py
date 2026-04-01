@@ -2,7 +2,7 @@ import os
 import time
 from dataclasses import dataclass, field
 from typing import List, Optional
-from openai import OpenAI
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 from src.core.agent_interface import BaseAgent
@@ -109,53 +109,36 @@ Format:
 }
 """
 
-
 def _compute_semantic_similarity(
-    outputs: List[str],
-    client: OpenAI
-) -> tuple[float, str]:
+    outputs: list,
+    model   # now receives a GenerativeModel
+) -> tuple:
     """
-    Asks an LLM to score how semantically similar
-    the N outputs are to each other.
-    Returns (score, reasoning).
+    Uses Gemini to score semantic similarity.
     """
-
     formatted = "\n\n".join(
         f"Response {i+1}:\n{output}"
         for i, output in enumerate(outputs)
     )
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            temperature=0.0,
-            messages=[
-                {
-                    "role": "system",
-                    "content": SIMILARITY_SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f"Compare these {len(outputs)} responses "
-                        f"to the same input:\n\n{formatted}"
-                    )
-                }
-            ]
+        response = model.generate_content(
+            f"Compare these {len(outputs)} responses "
+            f"to the same input:\n\n{formatted}"
         )
+        raw   = response.text.strip()
+        clean = raw.replace("```json","").replace("```","").strip()
 
         import json
-        raw = response.choices[0].message.content.strip()
-        clean = raw.replace("```json", "").replace("```", "").strip()
-        data = json.loads(clean)
-
-        score = max(0.0, min(1.0, float(data.get("similarity_score", 0.0))))
-        reasoning = data.get("reasoning", "No reasoning provided")
+        data  = json.loads(clean)
+        score = max(0.0, min(1.0, float(
+            data.get("similarity_score", 0.0)
+        )))
+        reasoning = data.get("reasoning", "No reasoning")
         return score, reasoning
 
     except Exception as e:
         return 0.5, f"Similarity computation failed: {str(e)}"
-
 
 def _compute_consistency_score(
     semantic_similarity: float,
@@ -211,9 +194,16 @@ class ConsistencyEvaluator:
     """
 
     def __init__(self, agent: BaseAgent, num_runs: int = DEFAULT_RUNS):
-        self.agent = agent
+        self.agent    = agent
         self.num_runs = num_runs
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        # Replace OpenAI client with Gemini model
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.similarity_model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SIMILARITY_SYSTEM_PROMPT,
+            generation_config=genai.GenerationConfig(temperature=0.0)
+        )
 
     def evaluate(self, test_case: TestCase) -> ConsistencyResult:
         """
@@ -280,7 +270,7 @@ class ConsistencyEvaluator:
             sim_reasoning = "All runs produced refusals — fully consistent"
         else:
             semantic_similarity, sim_reasoning = _compute_semantic_similarity(
-                valid_outputs, self.client
+                valid_outputs, self.similarity_model
             )
 
         print(f"      Semantic similarity : {semantic_similarity}")
