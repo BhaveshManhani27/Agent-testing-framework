@@ -56,7 +56,7 @@ def main():
     logger = RunLogger()
 
     # ── Step 2: Load test cases ───────────────────────────────────
-    print("\n📋 Loading test suite...")
+    print("\nLoading test suite...")
     registry = TestRegistry()
     registry.summary()
 
@@ -64,11 +64,11 @@ def main():
 
     if args.quick:
         test_cases = test_cases[:6]
-        print(f"   ⚡ Quick mode: running {len(test_cases)} tests")
+        print(f"Quick mode: running {len(test_cases)} tests")
 
     # ── Step 3: Add adversarial cases (optional) ──────────────────
     if args.adversarial:
-        print("\n🧬 Generating adversarial mutations...")
+        print("\nGenerating adversarial mutations...")
         generator = AdversarialGenerator(llm_mode=False)
         normal_cases = registry.get_by_category("normal")[:2]
         mutated = generator.mutate_batch(
@@ -90,11 +90,11 @@ def main():
         )
 
     # ── Step 4: Run agent ─────────────────────────────────────────
-    print("\nInitializing agent...")
+    print("\nInitializing agent")
     agent  = SimplechatAgent()
     runner = TestRunner(agent=agent, verbose=True)
 
-    print(f"\n🚀 Running {len(test_cases)} test cases...")
+    print(f"\nRunning {len(test_cases)} test cases")
     results, run_summary = runner.run(test_cases)
 
     # ── Step 5: Consistency testing (optional) ────────────────────
@@ -119,7 +119,7 @@ def main():
     use_consensus = not args.no_consensus
     print(
         f"\nRunning evaluation pipeline "
-        f"({'consensus' if use_consensus else 'single'} judge)..."
+        f"({'consensus' if use_consensus else 'single'} judge)"
     )
 
     pipeline = EvaluationPipeline(
@@ -138,7 +138,7 @@ def main():
 
     # ── Step 9: Generate reports ──────────────────────────────────
     if not args.no_report:
-        print("\nGenerating reports...")
+        print("\nGenerating reports")
         reporter = Reporter()
         reporter.generate(
             pipeline_results,
@@ -170,7 +170,7 @@ def main():
             print(f"║  {ft:<25} {count} case(s)"
                   + " " * (27 - len(str(count))) + "║")
     else:
-        print("║  No failures detected ✅" + " " * 34 + "║")
+        print("║  No failures detected " + " " * 34 + "║")
 
     print(f"""╠══════════════════════════════════════════════════════════╣
 ║  Avg Latency : {scorecard.avg_latency_ms}ms                                     ║
@@ -180,7 +180,7 @@ def main():
 
     # Exit with error code if critical failures
     if scorecard.overall_score < 0.5:
-        print("⚠️  CRITICAL: Agent scored below 0.5 — review required")
+        print("CRITICAL: Agent scored below 0.5 — review required")
         sys.exit(1)
 
 

@@ -15,7 +15,7 @@ class SimplechatAgent(BaseAgent):
 
     def __init__(
         self,
-        model: str = "gemini-2.0-flash",
+        model: str = "gemini-2.5-flash-lite",
         system_prompt: str = None
     ):
         self.client = genai.Client(
@@ -30,13 +30,14 @@ class SimplechatAgent(BaseAgent):
     def run(self, input: str) -> AgentResponse:
         start = time.time()
         try:
+            # Combine system prompt + user input inline
+            full_input = (
+                f"{self.system_prompt}\n\nUser: {input}"
+            )
+
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=input,
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=self.system_prompt,
-                    temperature=0.0
-                )
+                contents=full_input
             )
             output  = response.text
             latency = round((time.time() - start) * 1000, 2)

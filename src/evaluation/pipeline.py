@@ -204,6 +204,14 @@ class EvaluationPipeline:
             print(f"     Stage 1: Rule Evaluator...")
 
         rule_result = self.rule_evaluator.evaluate(result)
+        
+        if rule_result is None:
+            from src.evaluation.rule_evaluator import RuleEvalResult
+            rule_result = RuleEvalResult(
+                verdict="SKIP",
+                reason="Rule evaluator returned None"
+            )
+
         trace.append(
             f"RULE: verdict={rule_result.verdict} "
             f"reason={rule_result.reason}"

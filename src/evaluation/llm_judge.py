@@ -6,6 +6,7 @@ from typing import Optional
 from google import genai
 from dotenv import load_dotenv
 from src.core.runner import TestResult
+from src.evaluation.rate_limiter import GEMINI_RATE_LIMITER
 
 load_dotenv()
 
@@ -99,7 +100,7 @@ class LLMJudge:
 
     def __init__(
         self,
-        model: str = "gemini-2.0-flash",
+        model: str = "gemini-2.5-flash-lite",
         temperature: float = 0.0
     ):
         self.client      = genai.Client(
@@ -111,13 +112,18 @@ class LLMJudge:
     def evaluate(self, result: TestResult) -> JudgeResult:
         start = time.time()
         try:
+
+            GEMINI_RATE_LIMITER.wait_if_needed()
+
+            full_prompt = (
+                JUDGE_SYSTEM_PROMPT
+                + "\n\n"
+                + _build_user_prompt(result)
+            )
+
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=_build_user_prompt(result),
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=JUDGE_SYSTEM_PROMPT,
-                    temperature=self.temperature
-                )
+                contents=full_prompt
             )
             raw     = response.text.strip()
             latency = round((time.time() - start) * 1000, 2)
@@ -128,6 +134,7 @@ class LLMJudge:
 
         except Exception as e:
             latency = round((time.time() - start) * 1000, 2)
+            print(f"         JUDGE ERROR: {str(e)}")
             return JudgeResult(
                 correctness=0.0,
                 relevance=0.0,
@@ -137,6 +144,7 @@ class LLMJudge:
                 latency_ms=latency,
                 error=str(e)
             )
+        
 
     def _parse_response(self, raw: str) -> JudgeResult:
         try:

@@ -122,7 +122,7 @@ def _compute_semantic_similarity(
     )
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash-lite",
             contents=(
                 f"Compare these {len(outputs)} responses "
                 f"to the same input:\n\n{formatted}"

@@ -12,11 +12,6 @@ CONFIDENCE_MEDIUM = 0.08
 
 @dataclass
 class ConsensusResult:
-    """
-    Result from running 3 judges and reconciling their verdicts.
-    More trustworthy than any single judge call.
-    """
-
     judge_results: List[JudgeResult] = field(default_factory=list)
 
     correctness: float = 0.0
@@ -116,7 +111,7 @@ class ConsensusJudge:
       judges might be overconfident.
     """
 
-    def __init__(self, model: str = "gpt-4o-mini"):
+    def __init__(self, model: str = "gemini-2.5-flash-lite"):
         self.model = model
 
         self.judges = [

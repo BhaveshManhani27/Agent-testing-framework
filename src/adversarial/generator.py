@@ -143,7 +143,7 @@ class AdversarialGenerator:
     def __init__(
         self,
         llm_mode: bool = True,
-        model: str = "gemini-2.0-flash"
+        model: str = "gemini-2.5-flash-lite"
     ):
         self.llm_mode         = llm_mode
         self.model            = model

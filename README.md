@@ -315,7 +315,7 @@ Every failed test is tagged with a specific failure type:
 Switch providers by changing `.env`:
 ```bash
 AGENT_PROVIDER=gemini       # or openai / ollama
-AGENT_MODEL=gemini-1.5-flash
+AGENT_MODEL=gemini-2.5-flash-lite
 ```
 
 ---
