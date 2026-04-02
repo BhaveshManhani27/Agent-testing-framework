@@ -3,6 +3,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from src.core.agent_interface import BaseAgent
 from src.core.test_registry import TestCase
+from src.observability.log_config import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class TestResult:
@@ -14,7 +18,6 @@ class TestResult:
     agent_output: str            
     latency_ms: float            
     error: Optional[str] = None  
-
 
     verdict: Optional[str] = None          
     failure_type: Optional[str] = None    
@@ -63,10 +66,6 @@ class TestRunner:
     """
 
     def __init__(self, agent: BaseAgent, verbose: bool = True):
-        """
-        agent   : any class that inherits from BaseAgent
-        verbose : if True, prints progress to console as tests run
-        """
         self.agent = agent
         self.verbose = verbose
 
@@ -76,7 +75,7 @@ class TestRunner:
         Catches all exceptions so one failure never stops the whole suite.
         """
         if self.verbose:
-            print(f"Running {test_case.id} [{test_case.category}] — {test_case.input[:60]}")
+            logger.info("Running %s [%s] — %s", test_case.id, test_case.category, test_case.input[:60])
 
         start = time.time()
 
@@ -121,8 +120,8 @@ class TestRunner:
         results: List[TestResult] = []
         summary = RunSummary(total=len(test_cases))
 
-        print(f"\nStarting test run — {len(test_cases)} cases — Agent: {self.agent}")
-        print("─" * 60)
+        logger.info("Starting test run — %d cases — Agent: %s", len(test_cases), self.agent)
+        logger.info("─" * 60)
 
         for i, test_case in enumerate(test_cases, 1):
             result = self._run_single(test_case)
@@ -135,14 +134,14 @@ class TestRunner:
 
             if self.verbose:
                 status = "ERROR" if result.error else "ran"
-                print(f"    {status} in {result.latency_ms}ms")
+                logger.info("    %s in %sms", status, result.latency_ms)
 
-        print("─" * 60)
-        print(f"Test run complete.")
-        print(f"   Total      : {summary.total}")
-        print(f"   Errors     : {summary.errors}")
-        print(f"   Avg Latency: {summary.avg_latency}ms")
-        print(f"   Max Latency: {summary.max_latency}ms")
-        print(f"   Min Latency: {summary.min_latency}ms\n")
+        logger.info("─" * 60)
+        logger.info("Test run complete.")
+        logger.info("   Total      : %d", summary.total)
+        logger.info("   Errors     : %d", summary.errors)
+        logger.info("   Avg Latency: %sms", summary.avg_latency)
+        logger.info("   Max Latency: %sms", summary.max_latency)
+        logger.info("   Min Latency: %sms", summary.min_latency)
 
         return results, summary

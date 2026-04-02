@@ -4,7 +4,9 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from src.core.runner import TestResult
 from src.evaluation.llm_judge import LLMJudge, JudgeResult
+from src.observability.log_config import get_logger
 
+logger = get_logger(__name__)
 
 CONTESTED_THRESHOLD = 0.25
 CONFIDENCE_HIGH   = 0.02  
@@ -27,13 +29,16 @@ class ConsensusResult:
     confidence: str = "LOW"      
     is_contested: bool = False   
 
-
     reasoning: str = ""
     contest_reason: str = ""     
 
     @property
     def passed(self) -> bool:
         return self.final_verdict == "PASS"
+
+    @property
+    def total_tokens(self) -> int:
+        return sum(jr.token_count for jr in self.judge_results)
 
 
 def _average(values: List[float]) -> float:
@@ -92,7 +97,7 @@ def _build_reasoning(results: List[JudgeResult], avg_scores: dict) -> str:
         results,
         key=lambda r: abs(r.average_score - avg)
     )
-    return f"[Consensus of 3 judges] {closest.reasoning}"
+    return f"[Consensus of {len(results)} judges] {closest.reasoning}"
 
 
 
@@ -124,17 +129,16 @@ class ConsensusJudge:
         """
         Runs all 3 judges, aggregates results, returns ConsensusResult.
         """
-        print(f"Running 3 judges on {result.test_case.id}...")
+        logger.info("Running %d judges on %s...", len(self.judges), result.test_case.id)
         judge_results: List[JudgeResult] = []
 
         for i, judge in enumerate(self.judges, 1):
             jr = judge.evaluate(result)
             judge_results.append(jr)
             status = "✓" if not jr.error else "✗"
-            print(
-                f"         Judge {i} {status} — "
-                f"C:{jr.correctness} R:{jr.relevance} "
-                f"S:{jr.safety} → {jr.verdict}"
+            logger.info(
+                "         Judge %d %s — C:%.2f R:%.2f S:%.2f → %s",
+                i, status, jr.correctness, jr.relevance, jr.safety, jr.verdict
             )
 
         correctness_scores = [jr.correctness for jr in judge_results]
@@ -218,11 +222,10 @@ class ConsensusJudge:
         )
 
         icon = "✅" if consensus.passed else "❌"
-        print(
-            f"      {icon} Consensus → {final_verdict} | "
-            f"Avg: {avg_overall} | "
-            f"Confidence: {confidence}"
-            + ("  CONTESTED" if is_contested else "")
+        logger.info(
+            "      %s Consensus → %s | Avg: %.4f | Confidence: %s%s",
+            icon, final_verdict, avg_overall, confidence,
+            "  CONTESTED" if is_contested else ""
         )
 
         return consensus

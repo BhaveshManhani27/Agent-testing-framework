@@ -3,11 +3,14 @@ import os
 from google import genai
 from dotenv import load_dotenv
 from src.core.agent_interface import BaseAgent, AgentResponse
+from src.observability.log_config import get_logger
 
 load_dotenv()
 
+logger = get_logger(__name__)
 
-class SimplechatAgent(BaseAgent):
+
+class SimpleChatAgent(BaseAgent):
     """
     Sample agent powered by Google Gemini.
     Uses new google-genai package.
@@ -41,11 +44,26 @@ class SimplechatAgent(BaseAgent):
             )
             output  = response.text
             latency = round((time.time() - start) * 1000, 2)
+
+            # Estimate token count for cost tracking
+            try:
+                from src.observability.cost_tracker import COST_TRACKER
+                input_tokens = len(full_input.split())
+                output_tokens = len(output.split())
+                COST_TRACKER.record_call(
+                    component="agent",
+                    model=self.model_name,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                )
+            except Exception:
+                pass  # Cost tracking is optional
+
             return AgentResponse(output=output, latency_ms=latency)
 
         except Exception as e:
             latency = round((time.time() - start) * 1000, 2)
-            print(f"    AGENT ERROR: {str(e)}")
+            logger.error("AGENT ERROR: %s", str(e))
             return AgentResponse(
                 output="",
                 error=str(e),

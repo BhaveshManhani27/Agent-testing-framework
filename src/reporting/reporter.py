@@ -3,6 +3,9 @@ from datetime import datetime
 from typing import List
 from src.evaluation.pipeline import PipelineResult
 from src.metrics.scorer import AgentScoreCard
+from src.observability.log_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class Reporter:
@@ -132,7 +135,7 @@ class Reporter:
         with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(lines))
 
-        print(f"Text report saved  → {path}")
+        logger.info("Text report saved  → %s", path)
 
     # ─────────────────────────────────────────
     # HTML Report
@@ -411,4 +414,4 @@ class Reporter:
         with open(path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        print(f"HTML report saved  → {path}")
+        logger.info("HTML report saved  → %s", path)

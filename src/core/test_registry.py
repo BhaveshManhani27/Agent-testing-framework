@@ -2,6 +2,9 @@ import yaml
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from src.observability.log_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class TestCase(BaseModel):
@@ -31,9 +34,9 @@ class TestRegistry:
             try:
                 self.test_cases.append(TestCase(**item))
             except Exception as e:
-                print(f"Skipping invalid test case: {item.get('id', '?')} — {e}")
+                logger.warning("Skipping invalid test case: %s — %s", item.get('id', '?'), e)
 
-        print(f"Loaded {len(self.test_cases)} test cases from {self.path}")
+        logger.info("Loaded %d test cases from %s", len(self.test_cases), self.path)
 
     def get_all(self) -> List[TestCase]:
         return self.test_cases
@@ -48,7 +51,7 @@ class TestRegistry:
         """Print a quick breakdown of the test suite."""
         from collections import Counter
         cats = Counter(tc.category for tc in self.test_cases)
-        print("\nTest Suite Summary:")
+        logger.info("Test Suite Summary:")
         for cat, count in cats.items():
-            print(f"   {cat:<15} {count} tests")
-        print(f"   {'TOTAL':<15} {len(self.test_cases)} tests\n")
+            logger.info("   %s %d tests", f"{cat:<15}", count)
+        logger.info("   %s %d tests", f"{'TOTAL':<15}", len(self.test_cases))

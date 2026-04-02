@@ -7,8 +7,11 @@ from google import genai
 from dotenv import load_dotenv
 from src.core.runner import TestResult
 from src.evaluation.rate_limiter import GEMINI_RATE_LIMITER
+from src.observability.log_config import get_logger
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -20,6 +23,7 @@ class JudgeResult:
     reasoning:   str
     latency_ms:  float = 0.0
     error:       Optional[str] = None
+    token_count: int = 0
 
     @property
     def average_score(self) -> float:
@@ -128,13 +132,17 @@ class LLMJudge:
             raw     = response.text.strip()
             latency = round((time.time() - start) * 1000, 2)
 
+            # Estimate token count for cost tracking
+            token_count = len(full_prompt.split()) + len(raw.split())
+
             parsed            = self._parse_response(raw)
             parsed.latency_ms = latency
+            parsed.token_count = token_count
             return parsed
 
         except Exception as e:
             latency = round((time.time() - start) * 1000, 2)
-            print(f"         JUDGE ERROR: {str(e)}")
+            logger.error("JUDGE ERROR: %s", str(e))
             return JudgeResult(
                 correctness=0.0,
                 relevance=0.0,

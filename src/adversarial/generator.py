@@ -7,8 +7,11 @@ from google import genai
 from dotenv import load_dotenv
 
 from src.core.test_registry import TestCase
+from src.observability.log_config import get_logger
 
 load_dotenv()
+
+logger = get_logger(__name__)
 
 
 MUTATION_TYPES = [
@@ -44,7 +47,7 @@ def _build_mutation_prompt(
     mutation_type: str
 ) -> str:
     """
-    Builds the prompt we send to GPT to generate
+    Builds the prompt we send to the LLM to generate
     one adversarial variant of the original input.
     """
 
@@ -139,7 +142,21 @@ def _apply_template(original_input: str, mutation_type: str) -> str:
     template = random.choice(templates)
     return template.replace("{input}", original_input)
 
+
 class AdversarialGenerator:
+    """
+    Takes normal test cases and generates adversarial variants
+    using either LLM-powered generation or hardcoded templates.
+
+    Two modes:
+      llm_mode=True  → LLM generates creative attacks
+      llm_mode=False → Templates (free, instant)
+
+    Expected behavior flips automatically:
+      Normal case expects helpful answer
+      Mutated case expects refusal/resistance
+    """
+
     def __init__(
         self,
         llm_mode: bool = True,
@@ -159,6 +176,7 @@ class AdversarialGenerator:
         original_input: str,
         mutation_type: str
     ) -> str:
+        """Generate adversarial variant using LLM."""
         try:
             prompt   = _build_mutation_prompt(
                 original_input, mutation_type
@@ -179,9 +197,8 @@ class AdversarialGenerator:
             return response.text.strip()
 
         except Exception as e:
-            print(
-                f"         Gemini generation failed "
-                f"({e}), using template"
+            logger.warning(
+                "LLM generation failed (%s), using template", e
             )
             return _apply_template(original_input, mutation_type)
         
@@ -207,9 +224,9 @@ class AdversarialGenerator:
         mutated: List[MutatedTestCase] = []
 
         for mutation_type in mutation_types:
-            print(
-                f"       Generating {mutation_type} variant "
-                f"of {test_case.id}..."
+            logger.info(
+                "  Generating %s variant of %s...",
+                mutation_type, test_case.id
             )
 
             if self.llm_mode:
@@ -246,8 +263,8 @@ class AdversarialGenerator:
                 mutation_description=MUTATION_DESCRIPTIONS[mutation_type]
             ))
 
-            print(f"         Generated: {new_id}")
-            print(f"         Input preview: {mutated_input[:80]}...")
+            logger.info("    Generated: %s", new_id)
+            logger.debug("    Input preview: %s...", mutated_input[:80])
 
         return mutated
 
@@ -263,34 +280,16 @@ class AdversarialGenerator:
         all_mutated: List[MutatedTestCase] = []
 
         for tc in test_cases:
-            print(f"\n   Mutating {tc.id} [{tc.category}]...")
+            logger.info("Mutating %s [%s]...", tc.id, tc.category)
             variants = self.mutate(tc, mutation_types)
             all_mutated.extend(variants)
 
-        print(
-            f"\n   Generated {len(all_mutated)} adversarial variants "
-            f"from {len(test_cases)} original test cases"
+        logger.info(
+            "Generated %d adversarial variants from %d original test cases",
+            len(all_mutated), len(test_cases)
         )
         return all_mutated
 
-    def _generate_with_llm(
-        self,
-        original_input: str,
-        mutation_type: str
-    ) -> str:
-        try:
-            prompt   = _build_mutation_prompt(
-                original_input, mutation_type
-            )
-            response = self.gemini_model.generate_content(prompt)
-            return response.text.strip()
-
-        except Exception as e:
-            print(
-                f"         Gemini generation failed "
-                f"({e}), using template"
-            )
-            return _apply_template(original_input, mutation_type)
     @property
     def generated_count(self) -> int:
         return self._generated_count

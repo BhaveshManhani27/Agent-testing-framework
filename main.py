@@ -1,8 +1,24 @@
+"""
+Agent Testing Framework — Main Entrypoint
+
+Production-grade AI agent evaluation system with:
+  - Multi-stage evaluation pipeline
+  - Multi-judge consensus scoring
+  - Adversarial mutation engine
+  - Behavioral consistency testing
+  - Multi-turn conversation testing
+  - Dimensional scoring with statistical analysis
+  - Cost tracking and reporting
+"""
+
 import argparse
+import asyncio
 import sys
+
+from src.observability.log_config import setup_logging, get_logger
 from src.core.test_registry import TestRegistry
 from src.core.runner import TestRunner
-from src.agents.sample_agent import SimplechatAgent
+from src.agents.sample_agent import SimpleChatAgent
 from src.adversarial.generator import AdversarialGenerator
 from src.adversarial.catalog import get_catalog
 from src.evaluation.pipeline import EvaluationPipeline
@@ -10,11 +26,14 @@ from src.evaluation.consistency_evaluator import ConsistencyEvaluator
 from src.metrics.scorer import AgentScorer
 from src.reporting.reporter import Reporter
 from src.observability.logger import RunLogger
+from src.observability.cost_tracker import COST_TRACKER
+
+logger = get_logger(__name__)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Agent Testing Framework"
+        description="Agent Testing Framework — Production-grade AI agent evaluation"
     )
     parser.add_argument(
         "--quick", action="store_true",
@@ -33,8 +52,24 @@ def parse_args():
         help="Run behavioral consistency tests"
     )
     parser.add_argument(
+        "--multi-turn", action="store_true",
+        help="Run multi-turn conversation tests"
+    )
+    parser.add_argument(
+        "--async-mode", action="store_true",
+        help="Run tests in parallel using async runner"
+    )
+    parser.add_argument(
+        "--max-concurrent", type=int, default=3,
+        help="Max concurrent tests in async mode (default: 3)"
+    )
+    parser.add_argument(
         "--no-report", action="store_true",
         help="Skip file report generation"
+    )
+    parser.add_argument(
+        "--no-cost", action="store_true",
+        help="Skip cost tracking report"
     )
     return parser.parse_args()
 
@@ -42,21 +77,23 @@ def parse_args():
 def print_banner():
     print("""
 ╔══════════════════════════════════════════════════════════╗
-║           AGENT TESTING FRAMEWORK v1.0                  ║
+║           AGENT TESTING FRAMEWORK v2.0                  ║
 ║     Production-grade AI agent evaluation system         ║
 ╚══════════════════════════════════════════════════════════╝
     """)
 
 
 def main():
+    # ── Initialize ────────────────────────────────────────────────
+    setup_logging()
     args = parse_args()
     print_banner()
 
     # ── Step 1: Initialize logger ─────────────────────────────────
-    logger = RunLogger()
+    run_logger = RunLogger()
 
     # ── Step 2: Load test cases ───────────────────────────────────
-    print("\nLoading test suite...")
+    logger.info("Loading test suite...")
     registry = TestRegistry()
     registry.summary()
 
@@ -64,11 +101,11 @@ def main():
 
     if args.quick:
         test_cases = test_cases[:6]
-        print(f"Quick mode: running {len(test_cases)} tests")
+        logger.info("Quick mode: running %d tests", len(test_cases))
 
     # ── Step 3: Add adversarial cases (optional) ──────────────────
     if args.adversarial:
-        print("\nGenerating adversarial mutations...")
+        logger.info("Generating adversarial mutations...")
         generator = AdversarialGenerator(llm_mode=False)
         normal_cases = registry.get_by_category("normal")[:2]
         mutated = generator.mutate_batch(
@@ -84,22 +121,46 @@ def main():
             [m.test_case for m in mutated] + catalog
         )
         test_cases = test_cases + adversarial_cases
-        print(
-            f"   Added {len(adversarial_cases)} adversarial cases. "
-            f"Total: {len(test_cases)}"
+        logger.info(
+            "Added %d adversarial cases. Total: %d",
+            len(adversarial_cases), len(test_cases)
         )
 
     # ── Step 4: Run agent ─────────────────────────────────────────
-    print("\nInitializing agent")
-    agent  = SimplechatAgent()
-    runner = TestRunner(agent=agent, verbose=True)
+    logger.info("Initializing agent")
+    agent  = SimpleChatAgent()
 
-    print(f"\nRunning {len(test_cases)} test cases")
-    results, run_summary = runner.run(test_cases)
+    if args.async_mode:
+        from src.core.async_runner import AsyncTestRunner
+        runner = AsyncTestRunner(
+            agent=agent,
+            max_concurrent=args.max_concurrent,
+            verbose=True
+        )
+        logger.info("Running %d test cases (async, max_concurrent=%d)",
+                     len(test_cases), args.max_concurrent)
+        results, run_summary = asyncio.run(runner.run(test_cases))
+    else:
+        runner = TestRunner(agent=agent, verbose=True)
+        logger.info("Running %d test cases", len(test_cases))
+        results, run_summary = runner.run(test_cases)
 
-    # ── Step 5: Consistency testing (optional) ────────────────────
+    # ── Step 5: Multi-turn conversation tests (optional) ──────────
+    if args.multi_turn:
+        from src.evaluation.multi_turn import (
+            ConversationRunner, load_conversation_tests
+        )
+        logger.info("Running multi-turn conversation tests...")
+        conv_tests = load_conversation_tests()
+        if conv_tests:
+            conv_runner = ConversationRunner(agent=agent, verbose=True)
+            conv_results = conv_runner.run_batch(conv_tests)
+        else:
+            logger.warning("No conversation tests found")
+
+    # ── Step 6: Consistency testing (optional) ────────────────────
     if args.consistency:
-        print("\nRunning behavioral consistency tests...")
+        logger.info("Running behavioral consistency tests...")
         consistency_evaluator = ConsistencyEvaluator(
             agent=agent, num_runs=3
         )
@@ -108,18 +169,19 @@ def main():
             cat_cases = registry.get_by_category(category)
             if cat_cases:
                 c_result = consistency_evaluator.evaluate(cat_cases[0])
-                print(
-                    f"   {cat_cases[0].id}: "
-                    f"consistency={c_result.consistency_score} "
-                    f"→ {c_result.verdict}"
-                    + (" CRITICAL" if c_result.is_critical else "")
+                logger.info(
+                    "  %s: consistency=%.4f → %s%s",
+                    cat_cases[0].id,
+                    c_result.consistency_score,
+                    c_result.verdict,
+                    " CRITICAL" if c_result.is_critical else ""
                 )
 
-    # ── Step 6: Evaluation pipeline ───────────────────────────────
+    # ── Step 7: Evaluation pipeline ───────────────────────────────
     use_consensus = not args.no_consensus
-    print(
-        f"\nRunning evaluation pipeline "
-        f"({'consensus' if use_consensus else 'single'} judge)"
+    logger.info(
+        "Running evaluation pipeline (%s judge)",
+        'consensus' if use_consensus else 'single'
     )
 
     pipeline = EvaluationPipeline(
@@ -128,25 +190,44 @@ def main():
     )
     pipeline_results = pipeline.evaluate_batch(results)
 
-    # ── Step 7: Score ─────────────────────────────────────────────
+    # ── Step 8: Score ─────────────────────────────────────────────
     scorer    = AgentScorer()
     scorecard = scorer.score(pipeline_results)
 
-    # ── Step 8: Log everything ────────────────────────────────────
-    logger.log_results(pipeline_results)
-    logger.log_scorecard(scorecard)
+    # ── Step 9: Log everything ────────────────────────────────────
+    run_logger.log_results(pipeline_results)
+    run_logger.log_scorecard(scorecard)
 
-    # ── Step 9: Generate reports ──────────────────────────────────
+    # ── Step 10: Generate reports ─────────────────────────────────
     if not args.no_report:
-        print("\nGenerating reports")
+        logger.info("Generating reports")
         reporter = Reporter()
         reporter.generate(
             pipeline_results,
             scorecard,
-            run_id=logger.run_id
+            run_id=run_logger.run_id
         )
 
-    # ── Step 10: Final summary ────────────────────────────────────
+    # ── Step 11: Cost report ──────────────────────────────────────
+    if not args.no_cost:
+        COST_TRACKER.print_report(num_tests=len(test_cases))
+
+    # ── Step 12: Final summary ────────────────────────────────────
+    _print_final_summary(scorecard, run_logger)
+
+    # Exit with error code if critical failures
+    if scorecard.overall_score < 0.5:
+        logger.warning("CRITICAL: Agent scored below 0.5 — review required")
+        sys.exit(1)
+
+
+def _print_final_summary(scorecard, run_logger):
+    """Print the final scorecard to terminal."""
+    # CI info
+    ci_str = ""
+    if scorecard.overall_ci:
+        ci_str = f" CI: [{scorecard.overall_ci.lower:.2f}, {scorecard.overall_ci.upper:.2f}]"
+
     print(f"""
 ╔══════════════════════════════════════════════════════════╗
 ║                  FINAL RESULTS                          ║
@@ -174,14 +255,9 @@ def main():
 
     print(f"""╠══════════════════════════════════════════════════════════╣
 ║  Avg Latency : {scorecard.avg_latency_ms}ms                                     ║
-║  Run ID      : {logger.run_id}                                        ║
+║  Run ID      : {run_logger.run_id}                                        ║
 ╚══════════════════════════════════════════════════════════╝
     """)
-
-    # Exit with error code if critical failures
-    if scorecard.overall_score < 0.5:
-        print("CRITICAL: Agent scored below 0.5 — review required")
-        sys.exit(1)
 
 
 if __name__ == "__main__":

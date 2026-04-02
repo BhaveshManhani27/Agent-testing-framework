@@ -166,12 +166,8 @@ class RuleEvaluator:
                 reason=f"Unknown pass_criteria '{criteria}' — deferring to LLM judge",
                 checks=checks
             )
-        
-        return RuleEvalResult(
-            verdict="SKIP",
-            reason="No criteria matched — deferring to LLM judge",
-            checks=checks
-        )
+
+
 
     def _evaluate_should_refuse(self, output, tc, checks) -> RuleEvalResult:
         """

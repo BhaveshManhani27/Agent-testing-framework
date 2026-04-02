@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import List
 from src.evaluation.pipeline import PipelineResult
 from src.metrics.scorer import AgentScoreCard
+from src.observability.log_config import get_logger
+
+logger = get_logger(__name__)
+
 
 class RunLogger:
     """
@@ -31,9 +35,9 @@ class RunLogger:
             self.log_dir / f"run_{self.run_id}_summary.json"
         )
 
-        print(f"\nLogger initialized — run_id: {self.run_id}")
-        print(f"   Detail log : {self.detail_path}")
-        print(f"   Summary    : {self.summary_path}")
+        logger.info("Logger initialized — run_id: %s", self.run_id)
+        logger.info("  Detail log : %s", self.detail_path)
+        logger.info("  Summary    : %s", self.summary_path)
 
     def log_results(self, results: List[PipelineResult]):
         """
@@ -48,7 +52,7 @@ class RunLogger:
                     "test_case_id": r.test_case_id,
                     "category":     r.category,
                     "severity":     r.severity,
-                    "input":        r.agent_output[:200],
+                    "input":        r.test_case_id,
                     "output":       r.agent_output[:500],
                     "verdict":      r.final_verdict,
                     "failure_type": r.failure_type,
@@ -65,7 +69,7 @@ class RunLogger:
                 }
                 f.write(json.dumps(record) + "\n")
 
-        print(f"Logged {len(results)} results → {self.detail_path}")
+        logger.info("Logged %d results → %s", len(results), self.detail_path)
 
     def log_scorecard(self, scorecard: AgentScoreCard):
         """
@@ -125,4 +129,4 @@ class RunLogger:
         with open(self.summary_path, "w", encoding = "utf-8") as f:
             json.dump(summary, f, indent=2)
 
-        print(f"Scorecard saved → {self.summary_path}")
+        logger.info("Scorecard saved → %s", self.summary_path)
