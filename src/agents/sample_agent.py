@@ -1,6 +1,6 @@
 import time
 import os
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 from src.core.agent_interface import BaseAgent, AgentResponse
 from src.observability.log_config import get_logger
@@ -12,17 +12,17 @@ logger = get_logger(__name__)
 
 class SimpleChatAgent(BaseAgent):
     """
-    Sample agent powered by Google Gemini.
-    Uses new google-genai package.
+    Sample agent powered by Groq (LPU inference).
+    Uses the Groq Python SDK with Llama 3.3 70B.
     """
 
     def __init__(
         self,
-        model: str = "gemini-2.5-flash-lite",
+        model: str = "llama-3.3-70b-versatile",
         system_prompt: str = None
     ):
-        self.client = genai.Client(
-            api_key=os.getenv("GEMINI_API_KEY")
+        self.client = Groq(
+            api_key=os.getenv("GROQ_API_KEY")
         )
         self.model_name    = model
         self.system_prompt = system_prompt or (
@@ -33,28 +33,27 @@ class SimpleChatAgent(BaseAgent):
     def run(self, input: str) -> AgentResponse:
         start = time.time()
         try:
-            # Combine system prompt + user input inline
-            full_input = (
-                f"{self.system_prompt}\n\nUser: {input}"
-            )
-
-            response = self.client.models.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model_name,
-                contents=full_input
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": input}
+                ],
+                temperature=0.7,
+                max_tokens=1024,
             )
-            output  = response.text
+            output  = response.choices[0].message.content
             latency = round((time.time() - start) * 1000, 2)
 
-            # Estimate token count for cost tracking
+            # Track token usage for cost reporting
             try:
                 from src.observability.cost_tracker import COST_TRACKER
-                input_tokens = len(full_input.split())
-                output_tokens = len(output.split())
+                usage = response.usage
                 COST_TRACKER.record_call(
                     component="agent",
                     model=self.model_name,
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
+                    input_tokens=usage.prompt_tokens if usage else 0,
+                    output_tokens=usage.completion_tokens if usage else 0,
                 )
             except Exception:
                 pass  # Cost tracking is optional

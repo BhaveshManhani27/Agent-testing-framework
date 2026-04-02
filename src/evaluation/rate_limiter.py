@@ -13,14 +13,14 @@ class RateLimiter:
 
     def __init__(
         self,
-        calls_per_minute: int = 5,
-        buffer: int = 1
+        calls_per_minute: int = 30,
+        buffer: int = 2
     ):
         """
-        calls_per_minute : Gemini free tier limit
+        calls_per_minute : Groq free tier = 30 RPM
         buffer           : calls to keep in reserve
         """
-        self.limit     = calls_per_minute - buffer  # safe limit = 4
+        self.limit     = calls_per_minute - buffer  # safe limit = 28
         self.window    = 60.0                        # 1 minute window
         self.calls     = []                          # timestamps
         self.lock      = Lock()
@@ -54,4 +54,8 @@ class RateLimiter:
             self.calls.append(time.time())
 
 
-GEMINI_RATE_LIMITER = RateLimiter(calls_per_minute=5)
+# Groq free tier: 30 requests per minute
+RATE_LIMITER = RateLimiter(calls_per_minute=30)
+
+# Backward compatibility alias
+GEMINI_RATE_LIMITER = RATE_LIMITER

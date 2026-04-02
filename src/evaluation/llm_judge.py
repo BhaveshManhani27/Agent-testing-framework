@@ -3,10 +3,10 @@ import json
 import time
 from dataclasses import dataclass
 from typing import Optional
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 from src.core.runner import TestResult
-from src.evaluation.rate_limiter import GEMINI_RATE_LIMITER
+from src.evaluation.rate_limiter import RATE_LIMITER
 from src.observability.log_config import get_logger
 
 load_dotenv()
@@ -100,15 +100,15 @@ Score the response. Return ONLY the JSON object.
 
 
 class LLMJudge:
-    """LLM judge powered by Google Gemini (new google-genai SDK)."""
+    """LLM judge powered by Groq (LPU inference)."""
 
     def __init__(
         self,
-        model: str = "gemini-2.5-flash-lite",
+        model: str = "llama-3.3-70b-versatile",
         temperature: float = 0.0
     ):
-        self.client      = genai.Client(
-            api_key=os.getenv("GEMINI_API_KEY")
+        self.client = Groq(
+            api_key=os.getenv("GROQ_API_KEY")
         )
         self.model_name  = model
         self.temperature = temperature
@@ -117,23 +117,28 @@ class LLMJudge:
         start = time.time()
         try:
 
-            GEMINI_RATE_LIMITER.wait_if_needed()
+            RATE_LIMITER.wait_if_needed()
 
-            full_prompt = (
-                JUDGE_SYSTEM_PROMPT
-                + "\n\n"
-                + _build_user_prompt(result)
-            )
+            user_prompt = _build_user_prompt(result)
 
-            response = self.client.models.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model_name,
-                contents=full_prompt
+                messages=[
+                    {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=512,
             )
-            raw     = response.text.strip()
+            raw     = response.choices[0].message.content.strip()
             latency = round((time.time() - start) * 1000, 2)
 
-            # Estimate token count for cost tracking
-            token_count = len(full_prompt.split()) + len(raw.split())
+            # Get actual token count from response
+            usage = response.usage
+            token_count = (
+                (usage.prompt_tokens + usage.completion_tokens)
+                if usage else 0
+            )
 
             parsed            = self._parse_response(raw)
             parsed.latency_ms = latency

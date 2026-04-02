@@ -15,13 +15,17 @@ logger = get_logger(__name__)
 # ── Pricing per 1M tokens (approximate, as of 2026) ─────
 # Update these when models change
 PRICING = {
-    "gemini-2.5-flash-lite": {
-        "input": 0.075,    # $ per 1M input tokens
-        "output": 0.30,    # $ per 1M output tokens
+    "llama-3.3-70b-versatile": {
+        "input": 0.59,    # $ per 1M input tokens
+        "output": 0.79,   # $ per 1M output tokens
     },
-    "gemini-2.0-flash": {
-        "input": 0.10,
-        "output": 0.40,
+    "llama-3.1-8b-instant": {
+        "input": 0.05,
+        "output": 0.08,
+    },
+    "gemini-2.5-flash-lite": {
+        "input": 0.075,
+        "output": 0.30,
     },
     "gpt-4o-mini": {
         "input": 0.15,
@@ -81,8 +85,8 @@ class CostTracker:
 
     Usage:
         tracker = CostTracker()
-        tracker.record_call("agent", "gemini-2.5-flash-lite", 100, 50, "TC001")
-        tracker.record_call("judge", "gemini-2.5-flash-lite", 200, 100, "TC001")
+        tracker.record_call("agent", "llama-3.3-70b-versatile", 100, 50, "TC001")
+        tracker.record_call("judge", "llama-3.3-70b-versatile", 200, 100, "TC001")
         report = tracker.get_report(num_tests=20)
     """
 
