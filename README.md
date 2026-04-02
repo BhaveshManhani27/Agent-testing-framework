@@ -1,8 +1,8 @@
-﻿# ðŸ¤– Agent Testing Framework
+# 🤖 Agent Testing Framework
 
 A production-grade framework to test **any AI agent** using
 predefined test cases, automated evaluation, adversarial testing,
-multi-turn conversation testing, and dimensional scoring â€”
+multi-turn conversation testing, and dimensional scoring —
 with statistical analysis, cost tracking, and full observability.
 
 ![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
@@ -11,9 +11,9 @@ with statistical analysis, cost tracking, and full observability.
 
 ---
 
-## ðŸ“Œ What Is This?
+## 📌 What Is This?
 
-Most AI systems fail not because of poor models â€” but due to:
+Most AI systems fail not because of poor models — but due to:
 - No structured testing
 - No guardrail validation  
 - No evaluation pipeline
@@ -24,34 +24,34 @@ You plug in **any agent** via a simple interface.
 The framework handles everything else:
 ```
 Your Agent
-    â”‚
-    â–¼
+    │
+    ▼
 20+ Test Cases (normal, edge, adversarial, safety)
   + 5 Multi-turn conversation scenarios
-    â”‚
-    â–¼
+    │
+    ▼
 Evaluation Pipeline
-    â”œâ”€â”€ Rule-based checks          (fast, deterministic)
-    â”œâ”€â”€ Multi-judge consensus      (3 LLM judges + variance)
-    â”œâ”€â”€ Behavioral consistency     (N-run stability + embedding similarity)
-    â”œâ”€â”€ Multi-turn testing         (context retention, safety escalation)
-    â”œâ”€â”€ Statistical analysis       (bootstrap CIs, Wilson intervals)
-    â””â”€â”€ Failure taxonomy           (classify WHY it failed)
-    â”‚
-    â–¼
+    ├── Rule-based checks          (fast, deterministic)
+    ├── Multi-judge consensus      (3 LLM judges + variance)
+    ├── Behavioral consistency     (N-run stability + embedding similarity)
+    ├── Multi-turn testing         (context retention, safety escalation)
+    ├── Statistical analysis       (bootstrap CIs, Wilson intervals)
+    └── Failure taxonomy           (classify WHY it failed)
+    │
+    ▼
 Dimensional Scorecard
-    â”œâ”€â”€ Safety Score        (with 95% confidence interval)
-    â”œâ”€â”€ Accuracy Score      (with 95% confidence interval)
-    â”œâ”€â”€ Robustness Score
-    â””â”€â”€ Consistency Score
-    â”‚
-    â–¼
+    ├── Safety Score        (with 95% confidence interval)
+    ├── Accuracy Score      (with 95% confidence interval)
+    ├── Robustness Score
+    └── Consistency Score
+    │
+    ▼
 Reports (JSON + HTML) + Structured Logs + Cost Report
 ```
 
 ---
 
-## âœ¨ Key Features
+## ✨ Key Features
 
 | Feature | Description |
 |---|---|
@@ -72,57 +72,57 @@ Reports (JSON + HTML) + Structured Logs + Cost Report
 
 ---
 
-## ðŸ“ Project Structure
+## 📁 Project Structure
 ```
 agent-testing-framework/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ core/
-â”‚   â”‚   â”œâ”€â”€ agent_interface.py      # BaseAgent contract
-â”‚   â”‚   â”œâ”€â”€ test_registry.py        # Test case loader (Pydantic)
-â”‚   â”‚   â”œâ”€â”€ runner.py               # Sequential test executor
-â”‚   â”‚   â””â”€â”€ async_runner.py         # Parallel test executor (asyncio)
-â”‚   â”œâ”€â”€ evaluation/
-â”‚   â”‚   â”œâ”€â”€ rule_evaluator.py       # Fast deterministic checks
-â”‚   â”‚   â”œâ”€â”€ llm_judge.py            # Single LLM judge
-â”‚   â”‚   â”œâ”€â”€ consensus_judge.py      # 3-judge consensus system
-â”‚   â”‚   â”œâ”€â”€ consistency_evaluator.py# N-run stability + embedding similarity
-â”‚   â”‚   â”œâ”€â”€ multi_turn.py           # Multi-turn conversation testing
-â”‚   â”‚   â”œâ”€â”€ rate_limiter.py         # Thread-safe API rate limiter
-â”‚   â”‚   â””â”€â”€ pipeline.py             # Full evaluation pipeline
-â”‚   â”œâ”€â”€ adversarial/
-â”‚   â”‚   â”œâ”€â”€ generator.py            # Adversarial mutation engine
-â”‚   â”‚   â””â”€â”€ catalog.py              # Curated adversarial cases
-â”‚   â”œâ”€â”€ metrics/
-â”‚   â”‚   â”œâ”€â”€ scorer.py               # Dimensional scoring with CIs
-â”‚   â”‚   â””â”€â”€ statistics.py           # Bootstrap CI, Wilson, Cohen's d
-â”‚   â”œâ”€â”€ reporting/
-â”‚   â”‚   â””â”€â”€ reporter.py             # Text + HTML reports
-â”‚   â”œâ”€â”€ observability/
-â”‚   â”‚   â”œâ”€â”€ log_config.py           # Centralized logging configuration
-â”‚   â”‚   â”œâ”€â”€ logger.py               # Structured JSON run logging
-â”‚   â”‚   â””â”€â”€ cost_tracker.py         # API cost tracking
-â”‚   â””â”€â”€ agents/
-â”‚       â””â”€â”€ sample_agent.py         # Groq sample agent
-â”‚
-â”œâ”€â”€ tests/
-â”‚   â”œâ”€â”€ conftest.py                 # Shared fixtures + mock agents
-â”‚   â”œâ”€â”€ test_rule_evaluator.py      # 24 tests â€” every criteria path
-â”‚   â”œâ”€â”€ test_scorer.py              # 28 tests â€” scoring + grading
-â”‚   â”œâ”€â”€ test_pipeline.py            # 9 tests â€” failure taxonomy
-â”‚   â”œâ”€â”€ test_consensus.py           # 15 tests â€” consensus math
-â”‚   â”œâ”€â”€ test_registry.py            # 7 tests â€” YAML loading
-â”‚   â”œâ”€â”€ test_runner.py              # 10 tests â€” execution + errors
-â”‚   â”œâ”€â”€ test_adversarial.py         # 11 tests â€” mutation + catalog
-â”‚   â””â”€â”€ test_statistics.py          # 21 tests â€” CIs + effect size
-â”‚
-â”œâ”€â”€ data/
-â”‚   â”œâ”€â”€ test_cases.yaml             # 20 single-turn test cases
-â”‚   â””â”€â”€ conversation_tests.yaml    # 5 multi-turn conversation tests
-â”œâ”€â”€ main.py                         # Main entrypoint
-â”œâ”€â”€ requirements.txt
-â”œâ”€â”€ .env.example
-â”œâ”€â”€ INTEGRATION_GUIDE.md
-â””â”€â”€ ARCHITECTURE.md
+├── src/
+│   ├── core/
+│   │   ├── agent_interface.py      # BaseAgent contract
+│   │   ├── test_registry.py        # Test case loader (Pydantic)
+│   │   ├── runner.py               # Sequential test executor
+│   │   └── async_runner.py         # Parallel test executor (asyncio)
+│   ├── evaluation/
+│   │   ├── rule_evaluator.py       # Fast deterministic checks
+│   │   ├── llm_judge.py            # Single LLM judge
+│   │   ├── consensus_judge.py      # 3-judge consensus system
+│   │   ├── consistency_evaluator.py# N-run stability + embedding similarity
+│   │   ├── multi_turn.py           # Multi-turn conversation testing
+│   │   ├── rate_limiter.py         # Thread-safe API rate limiter
+│   │   └── pipeline.py             # Full evaluation pipeline
+│   ├── adversarial/
+│   │   ├── generator.py            # Adversarial mutation engine
+│   │   └── catalog.py              # Curated adversarial cases
+│   ├── metrics/
+│   │   ├── scorer.py               # Dimensional scoring with CIs
+│   │   └── statistics.py           # Bootstrap CI, Wilson, Cohen's d
+│   ├── reporting/
+│   │   └── reporter.py             # Text + HTML reports
+│   ├── observability/
+│   │   ├── log_config.py           # Centralized logging configuration
+│   │   ├── logger.py               # Structured JSON run logging
+│   │   └── cost_tracker.py         # API cost tracking
+│   └── agents/
+│       └── sample_agent.py         # Groq sample agent
+│
+├── tests/
+│   ├── conftest.py                 # Shared fixtures + mock agents
+│   ├── test_rule_evaluator.py      # 24 tests — every criteria path
+│   ├── test_scorer.py              # 28 tests — scoring + grading
+│   ├── test_pipeline.py            # 9 tests — failure taxonomy
+│   ├── test_consensus.py           # 15 tests — consensus math
+│   ├── test_registry.py            # 7 tests — YAML loading
+│   ├── test_runner.py              # 10 tests — execution + errors
+│   ├── test_adversarial.py         # 11 tests — mutation + catalog
+│   └── test_statistics.py          # 21 tests — CIs + effect size
+│
+├── data/
+│   ├── test_cases.yaml             # 20 single-turn test cases
+│   └── conversation_tests.yaml    # 5 multi-turn conversation tests
+├── main.py                         # Main entrypoint
+├── requirements.txt
+├── .env.example
+├── INTEGRATION_GUIDE.md
+└── ARCHITECTURE.md
 ```
 
 ---
@@ -135,13 +135,13 @@ agent-testing-framework/
 - A Groq API key (free tier works)
 - Git
 
-### Step 1 â€” Clone the repository
+### Step 1 — Clone the repository
 ```bash
 git clone https://github.com/BhaveshManhani27/Agent-testing-framework.git
 cd Agent-testing-framework
 ```
 
-### Step 2 â€” Create virtual environment
+### Step 2 — Create virtual environment
 ```bash
 python -m venv venv
 
@@ -152,12 +152,12 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### Step 3 â€” Install dependencies
+### Step 3 — Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4 â€” Configure environment
+### Step 4 — Configure environment
 
 Copy the example env file:
 ```bash
@@ -166,23 +166,23 @@ cp .env.example .env
 
 Open `.env` and fill in your values:
 ```bash
-# Required â€” used by both agent and LLM judge
-Groq_API_KEY=your-Groq-api-key-here
+# Required — used by both agent and LLM judge
+GROQ_API_KEY=your-gemini-api-key-here
 
 # Agent configuration
-AGENT_PROVIDER=Groq
-AGENT_MODEL=Groq-2.5-flash-lite
+AGENT_PROVIDER=gemini
+AGENT_MODEL=llama-3.3-70b-versatile
 
 # Judge configuration
-JUDGE_PROVIDER=Groq
-JUDGE_MODEL=Groq-2.5-flash-lite
+JUDGE_PROVIDER=gemini
+JUDGE_MODEL=llama-3.3-70b-versatile
 ```
 
 ---
 
 ## Running the Framework
 
-### Quick run (6 tests â€” fastest, saves API cost)
+### Quick run (6 tests — fastest, saves API cost)
 ```bash
 python main.py --quick
 ```
@@ -255,33 +255,33 @@ After running, these are generated automatically:
 ### 1. Logs (`logs/`)
 ```
 logs/
-â”œâ”€â”€ run_a3f9c1b2.jsonl           # one JSON line per test result
-â””â”€â”€ run_a3f9c1b2_summary.json    # full scorecard
+├── run_a3f9c1b2.jsonl           # one JSON line per test result
+└── run_a3f9c1b2_summary.json    # full scorecard
 ```
 
 ### 2. Reports (`reports/`)
 ```
 reports/
-â”œâ”€â”€ report_20240101_120000.txt   # terminal-style text report
-â””â”€â”€ report_20240101_120000.html  # visual HTML dashboard
+├── report_20240101_120000.txt   # terminal-style text report
+└── report_20240101_120000.html  # visual HTML dashboard
 ```
 
 ### 3. Cost Report (terminal)
 ```
 COST REPORT
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+──────────────────────────────────────────────
   Total API calls    : 63
   Total tokens       : 18,240 (in: 14,100, out: 4,140)
   Estimated cost     : $0.0023
-  â”œâ”€â”€ Agent          : $0.0008 (21 calls)
-  â””â”€â”€ Judge          : $0.0015 (42 calls)
+  ├── Agent          : $0.0008 (21 calls)
+  └── Judge          : $0.0015 (42 calls)
   Cost per test      : $0.000109
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+──────────────────────────────────────────────
 ```
 
 ---
 
-## ðŸ“‹ Test Case Categories
+## 📋 Test Case Categories
 
 The framework ships with 20 single-turn + 5 multi-turn test cases:
 
@@ -309,7 +309,7 @@ attack variants from normal cases automatically.
 
 ---
 
-## ðŸ§¬ Adversarial Mutation Engine
+## 🧬 Adversarial Mutation Engine
 
 Takes any normal test case and generates adversarial variants:
 
@@ -323,26 +323,26 @@ Takes any normal test case and generates adversarial variants:
 
 ---
 
-## âš–ï¸ Multi-Judge Consensus Scoring
+## ⚖️ Multi-Judge Consensus Scoring
 
 Instead of trusting one LLM judge, the framework runs **3 judges**:
 ```
-Judge 1 (temperature=0.0) â†’ score + reason
-Judge 2 (temperature=0.0) â†’ score + reason
-Judge 3 (temperature=0.3) â†’ score + reason
-        â”‚
-        â–¼
+Judge 1 (temperature=0.0) → score + reason
+Judge 2 (temperature=0.0) → score + reason
+Judge 3 (temperature=0.3) → score + reason
+        │
+        ▼
 Consensus Engine
-        â”‚
-â”œâ”€â”€ Averaged scores per dimension
-â”œâ”€â”€ Variance per dimension
-â”œâ”€â”€ Confidence: HIGH / MEDIUM / LOW
-â””â”€â”€ Contested flag if judges disagree > 0.25
+        │
+├── Averaged scores per dimension
+├── Variance per dimension
+├── Confidence: HIGH / MEDIUM / LOW
+└── Contested flag if judges disagree > 0.25
 ```
 
 ---
 
-## ðŸ“Š Statistical Analysis
+## 📊 Statistical Analysis
 
 All scores include proper uncertainty quantification:
 
@@ -359,7 +359,7 @@ Pass Rate     : 85.0%   CI: [62.1%, 96.8%] (Wilson)
 
 ---
 
-## ðŸ“ Scoring Dimensions
+## 📐 Scoring Dimensions
 
 | Dimension | Weight | What It Measures |
 |---|---|---|
@@ -372,14 +372,14 @@ Pass Rate     : 85.0%   CI: [62.1%, 96.8%] (Wilson)
 
 | Score | Grade | Label |
 |---|---|---|
-| 0.90 â€“ 1.00 | A | EXCELLENT |
-| 0.75 â€“ 0.89 | B | GOOD |
-| 0.50 â€“ 0.74 | C | POOR |
-| 0.00 â€“ 0.49 | F | CRITICAL |
+| 0.90 – 1.00 | A | EXCELLENT |
+| 0.75 – 0.89 | B | GOOD |
+| 0.50 – 0.74 | C | POOR |
+| 0.00 – 0.49 | F | CRITICAL |
 
 ---
 
-## ðŸ” Failure Taxonomy
+## 🔍 Failure Taxonomy
 
 Every failed test is tagged with a specific failure type:
 
@@ -396,12 +396,12 @@ Every failed test is tagged with a specific failure type:
 
 ---
 
-## ðŸ¢ Testing Your Own Agent
+## 🏢 Testing Your Own Agent
 
 If you want to plug in your own agent and run
 the full evaluation against it:
 
-ðŸ‘‰ **See [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)**
+👉 **See [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)**
 
 It covers:
 - How to wrap any agent in 3 minutes
@@ -411,7 +411,7 @@ It covers:
 
 ---
 
-## ðŸ› ï¸ Tech Stack
+## 🛠️ Tech Stack
 
 | Component | Technology |
 |---|---|
@@ -428,16 +428,16 @@ It covers:
 
 ---
 
-## ðŸ—ºï¸ Architecture
+## 🗺️ Architecture
 
 For a deep dive into system design, data flow,
 and key decisions:
 
-ðŸ‘‰ **See [ARCHITECTURE.md](ARCHITECTURE.md)**
+👉 **See [ARCHITECTURE.md](ARCHITECTURE.md)**
 
 ---
 
-## ðŸ”§ Common Issues
+## 🔧 Common Issues
 
 **`ModuleNotFoundError: No module named 'src'`**
 ```bash
@@ -449,7 +449,7 @@ python main.py
 **`google.api_core.exceptions.PermissionDenied`**
 ```bash
 # Check your .env file
-cat .env   # should show Groq_API_KEY=your-key
+cat .env   # should show GROQ_API_KEY=your-key
 ```
 
 **Rate limit errors**
@@ -461,13 +461,13 @@ python main.py --no-consensus
 
 ---
 
-## ðŸ“„ License
+## 📄 License
 
-MIT License â€” free to use, modify, and distribute.
+MIT License — free to use, modify, and distribute.
 
 ---
 
-## ðŸ‘¤ Author
+## 👤 Author
 
-**Bhavesh** â€” AI Research Intern Candidate  
+**Bhavesh** — AI Research Intern Candidate  
 Built for Uptiq.ai Agent Testing
