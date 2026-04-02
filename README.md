@@ -1,8 +1,13 @@
 # 🤖 Agent Testing Framework
+
 A production-grade framework to test **any AI agent** using
 predefined test cases, automated evaluation, adversarial testing,
-and dimensional scoring — with full observability and reporting.
+multi-turn conversation testing, and dimensional scoring —
+with statistical analysis, cost tracking, and full observability.
 
+![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Tests](https://img.shields.io/badge/tests-125%20passed-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -22,23 +27,26 @@ Your Agent
     │
     ▼
 20+ Test Cases (normal, edge, adversarial, safety)
+  + 5 Multi-turn conversation scenarios
     │
     ▼
 Evaluation Pipeline
-    ├── Rule-based checks     (fast, deterministic)
-    ├── Multi-judge consensus (3 LLM judges + variance)
-    ├── Behavioral consistency (N-run stability testing)
-    └── Failure taxonomy      (classify WHY it failed)
+    ├── Rule-based checks          (fast, deterministic)
+    ├── Multi-judge consensus      (3 LLM judges + variance)
+    ├── Behavioral consistency     (N-run stability + embedding similarity)
+    ├── Multi-turn testing         (context retention, safety escalation)
+    ├── Statistical analysis       (bootstrap CIs, Wilson intervals)
+    └── Failure taxonomy           (classify WHY it failed)
     │
     ▼
 Dimensional Scorecard
-    ├── Safety Score
-    ├── Accuracy Score
+    ├── Safety Score        (with 95% confidence interval)
+    ├── Accuracy Score      (with 95% confidence interval)
     ├── Robustness Score
     └── Consistency Score
     │
     ▼
-Reports (JSON + HTML) + Structured Logs
+Reports (JSON + HTML) + Structured Logs + Cost Report
 ```
 
 ---
@@ -47,14 +55,20 @@ Reports (JSON + HTML) + Structured Logs
 
 | Feature | Description |
 |---|---|
-| **Agent-Agnostic** | Plug in any agent via a simple interface |
-| **Multi-Judge Consensus** | 3 LLM judges with variance tracking |
-| **Adversarial Mutation Engine** | Auto-generates attack variants from normal cases |
+| **Agent-Agnostic** | Plug in any agent via `BaseAgent` interface |
+| **Multi-Judge Consensus** | 3 LLM judges with variance tracking and confidence scoring |
+| **Adversarial Mutation Engine** | Auto-generates 5 attack variants from normal cases |
+| **Multi-Turn Conversation Testing** | 5 scenarios: context retention, safety escalation, role persistence |
+| **Embedding-Based Similarity** | Deterministic cosine similarity via sentence-transformers |
+| **Statistical Analysis** | Bootstrap CIs, Wilson score intervals, Cohen's d effect size |
 | **Behavioral Consistency Testing** | Runs same input N times, scores stability |
 | **Failure Taxonomy** | Tags every failure: HALLUCINATION, REFUSAL_FAILURE, etc. |
-| **Dimensional Scoring** | Safety, Accuracy, Robustness, Consistency scores |
+| **Dimensional Scoring** | Safety, Accuracy, Robustness, Consistency with confidence intervals |
+| **Async Parallel Execution** | Concurrent test execution with configurable semaphore |
+| **Cost Tracking** | Per-test, per-component (agent vs judge) cost reporting |
+| **Structured Logging** | Centralized `logging` module across all components |
 | **HTML + JSON Reports** | Visual dashboard + machine-readable logs |
-| **Provider Flexible** | Works with OpenAI, Gemini, or Ollama |
+| **125 Unit Tests** | Full test suite, zero API calls, runs in 0.5s |
 
 ---
 
@@ -64,36 +78,51 @@ agent-testing-framework/
 ├── src/
 │   ├── core/
 │   │   ├── agent_interface.py      # BaseAgent contract
-│   │   ├── test_registry.py        # Test case loader
-│   │   └── runner.py               # Test executor
+│   │   ├── test_registry.py        # Test case loader (Pydantic)
+│   │   ├── runner.py               # Sequential test executor
+│   │   └── async_runner.py         # Parallel test executor (asyncio)
 │   ├── evaluation/
 │   │   ├── rule_evaluator.py       # Fast deterministic checks
 │   │   ├── llm_judge.py            # Single LLM judge
 │   │   ├── consensus_judge.py      # 3-judge consensus system
-│   │   ├── consistency_evaluator.py# N-run stability testing
+│   │   ├── consistency_evaluator.py# N-run stability + embedding similarity
+│   │   ├── multi_turn.py           # Multi-turn conversation testing
+│   │   ├── rate_limiter.py         # Thread-safe API rate limiter
 │   │   └── pipeline.py             # Full evaluation pipeline
 │   ├── adversarial/
 │   │   ├── generator.py            # Adversarial mutation engine
 │   │   └── catalog.py              # Curated adversarial cases
 │   ├── metrics/
-│   │   └── scorer.py               # Dimensional scoring
+│   │   ├── scorer.py               # Dimensional scoring with CIs
+│   │   └── statistics.py           # Bootstrap CI, Wilson, Cohen's d
 │   ├── reporting/
 │   │   └── reporter.py             # Text + HTML reports
 │   ├── observability/
-│   │   └── logger.py               # Structured JSON logging
+│   │   ├── log_config.py           # Centralized logging configuration
+│   │   ├── logger.py               # Structured JSON run logging
+│   │   └── cost_tracker.py         # API cost tracking
 │   └── agents/
-│       └── sample_agent.py         # OpenAI sample agent
-│   
-│                
+│       └── sample_agent.py         # Gemini sample agent
+│
+├── tests/
+│   ├── conftest.py                 # Shared fixtures + mock agents
+│   ├── test_rule_evaluator.py      # 24 tests — every criteria path
+│   ├── test_scorer.py              # 28 tests — scoring + grading
+│   ├── test_pipeline.py            # 9 tests — failure taxonomy
+│   ├── test_consensus.py           # 15 tests — consensus math
+│   ├── test_registry.py            # 7 tests — YAML loading
+│   ├── test_runner.py              # 10 tests — execution + errors
+│   ├── test_adversarial.py         # 11 tests — mutation + catalog
+│   └── test_statistics.py          # 21 tests — CIs + effect size
+│
 ├── data/
-│   └── test_cases.yaml             # 20 test cases
-├── logs/                           # Auto-created on run
-├── reports/                        # Auto-created on run
+│   ├── test_cases.yaml             # 20 single-turn test cases
+│   └── conversation_tests.yaml    # 5 multi-turn conversation tests
 ├── main.py                         # Main entrypoint
 ├── requirements.txt
+├── .env.example
 ├── INTEGRATION_GUIDE.md
-├── ARCHITECTURE.md
-└── .env.example
+└── ARCHITECTURE.md
 ```
 
 ---
@@ -103,13 +132,13 @@ agent-testing-framework/
 ### Prerequisites
 
 - Python 3.9 or higher
-- An OpenAI API key (for the LLM judge)
+- A Gemini API key (free tier works)
 - Git
 
 ### Step 1 — Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/agent-testing-framework.git
-cd agent-testing-framework
+git clone https://github.com/BhaveshManhani27/Agent-testing-framework.git
+cd Agent-testing-framework
 ```
 
 ### Step 2 — Create virtual environment
@@ -137,17 +166,16 @@ cp .env.example .env
 
 Open `.env` and fill in your values:
 ```bash
-# Required — used by LLM judge
-OPENAI_API_KEY=sk-your-openai-key-here
+# Required — used by both agent and LLM judge
+GEMINI_API_KEY=your-gemini-api-key-here
 
-# Agent provider (openai)
-AGENT_PROVIDER=openai
-AGENT_MODEL=gpt-4o-mini
+# Agent configuration
+AGENT_PROVIDER=gemini
+AGENT_MODEL=gemini-2.5-flash-lite
 
-# Judge provider
-JUDGE_PROVIDER=openai
-JUDGE_MODEL=gpt-4o-mini
-
+# Judge configuration
+JUDGE_PROVIDER=gemini
+JUDGE_MODEL=gemini-2.5-flash-lite
 ```
 
 ---
@@ -174,9 +202,19 @@ python main.py --adversarial
 python main.py --consistency
 ```
 
+### Multi-turn conversation testing
+```bash
+python main.py --multi-turn
+```
+
+### Parallel execution (async mode)
+```bash
+python main.py --async-mode --max-concurrent 3
+```
+
 ### Everything at once
 ```bash
-python main.py --adversarial --consistency
+python main.py --adversarial --consistency --multi-turn
 ```
 
 ### Faster mode (single judge instead of 3)
@@ -184,11 +222,35 @@ python main.py --adversarial --consistency
 python main.py --no-consensus
 ```
 
+### Skip optional outputs
+```bash
+python main.py --no-report     # skip file report generation
+python main.py --no-cost       # skip cost tracking report
+```
+
+---
+
+## Running Tests
+
+The framework includes 125 unit tests that run in ~0.5 seconds
+with zero API calls:
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run a specific test module
+python -m pytest tests/test_scorer.py -v
+
+# Run with coverage
+python -m pytest tests/ --tb=short
+```
+
 ---
 
 ## Output
 
-After running, two things are generated automatically:
+After running, these are generated automatically:
 
 ### 1. Logs (`logs/`)
 ```
@@ -204,23 +266,26 @@ reports/
 └── report_20240101_120000.html  # visual HTML dashboard
 ```
 
-Open the HTML report in your browser:
-```bash
-# Windows
-start reports/report_*.html
-
-# Mac
-open reports/report_*.html
-
-# Linux
-xdg-open reports/report_*.html
+### 3. Cost Report (terminal)
+```
+COST REPORT
+──────────────────────────────────────────────
+  Total API calls    : 63
+  Total tokens       : 18,240 (in: 14,100, out: 4,140)
+  Estimated cost     : $0.0023
+  ├── Agent          : $0.0008 (21 calls)
+  └── Judge          : $0.0015 (42 calls)
+  Cost per test      : $0.000109
+──────────────────────────────────────────────
 ```
 
 ---
 
 ## 📋 Test Case Categories
 
-The framework ships with 20 hand-crafted test cases:
+The framework ships with 20 single-turn + 5 multi-turn test cases:
+
+### Single-Turn Tests (`data/test_cases.yaml`)
 
 | Category | Count | Tests |
 |---|---|---|
@@ -228,6 +293,16 @@ The framework ships with 20 hand-crafted test cases:
 | **Edge** | 5 | Ambiguous inputs, empty content, nonsense input |
 | **Adversarial** | 5 | Prompt injection, jailbreaks, role confusion |
 | **Safety** | 5 | Harmful requests, dangerous instructions |
+
+### Multi-Turn Conversation Tests (`data/conversation_tests.yaml`)
+
+| ID | Scenario | What It Tests |
+|---|---|---|
+| CONV001 | Context retention | Does the agent remember earlier turns? |
+| CONV002 | Safety escalation | Does a multi-step jailbreak succeed? |
+| CONV003 | Emotional manipulation | Does the agent cave to emotional pressure? |
+| CONV004 | Topic switching | Can it handle abrupt context changes? |
+| CONV005 | Role persistence | Does the agent maintain identity under pressure? |
 
 Plus the adversarial mutation engine generates additional
 attack variants from normal cases automatically.
@@ -263,6 +338,23 @@ Consensus Engine
 ├── Variance per dimension
 ├── Confidence: HIGH / MEDIUM / LOW
 └── Contested flag if judges disagree > 0.25
+```
+
+---
+
+## 📊 Statistical Analysis
+
+All scores include proper uncertainty quantification:
+
+| Method | What It Does | Why |
+|---|---|---|
+| **Bootstrap CI** | 95% confidence interval on scores | Know how reliable a score is with small N |
+| **Wilson Score Interval** | CI on pass rates | Better than normal approx for n < 30 |
+| **Cohen's d** | Effect size for comparisons | Is the difference meaningful, not just non-zero? |
+
+```
+Overall Score : 0.87    CI: [0.78, 0.94]  (95% bootstrap)
+Pass Rate     : 85.0%   CI: [62.1%, 96.8%] (Wilson)
 ```
 
 ---
@@ -304,22 +396,6 @@ Every failed test is tagged with a specific failure type:
 
 ---
 
-## 🔌 Supported Providers
-
-| Provider | Cost | Requires |
-|---|---|---|
-| **OpenAI** | Paid | `OPENAI_API_KEY` |
-| **Google Gemini** | Free tier | `GEMINI_API_KEY` |
-| **Ollama** | Free, local | Ollama installed + running |
-
-Switch providers by changing `.env`:
-```bash
-AGENT_PROVIDER=gemini       # or openai / ollama
-AGENT_MODEL=gemini-2.5-flash-lite
-```
-
----
-
 ## 🏢 Testing Your Own Agent
 
 If you want to plug in your own agent and run
@@ -340,11 +416,15 @@ It covers:
 | Component | Technology |
 |---|---|
 | Language | Python 3.9+ |
-| LLM Provider | OpenAI / Gemini / Ollama |
+| LLM Provider | Google Gemini |
 | Data Validation | Pydantic |
 | Test Config | YAML |
+| Semantic Similarity | sentence-transformers (all-MiniLM-L6-v2) |
+| Statistical Analysis | Bootstrap CI, Wilson intervals, Cohen's d |
+| Testing | pytest (125 tests) |
+| Logging | Python `logging` module (structured) |
 | Reporting | HTML + JSON |
-| Logging | JSON Lines |
+| Async | asyncio + semaphore |
 
 ---
 
@@ -362,22 +442,21 @@ and key decisions:
 **`ModuleNotFoundError: No module named 'src'`**
 ```bash
 # Must run from the root folder
-cd agent-testing-framework
+cd Agent-testing-framework
 python main.py
 ```
 
-**`openai.AuthenticationError`**
+**`google.api_core.exceptions.PermissionDenied`**
 ```bash
 # Check your .env file
-cat .env   # should show OPENAI_API_KEY=sk-...
+cat .env   # should show GEMINI_API_KEY=your-key
 ```
 
-**Ollama `Connection refused`**
+**Rate limit errors**
 ```bash
-# Start Ollama server first
-ollama serve
-# Then in a new terminal:
-python main.py
+# The built-in rate limiter handles this automatically.
+# If issues persist, try --no-consensus for fewer API calls.
+python main.py --no-consensus
 ```
 
 ---
@@ -391,4 +470,4 @@ MIT License — free to use, modify, and distribute.
 ## 👤 Author
 
 **Bhavesh** — AI Research Intern Candidate  
-Built for Uptiq.ai Agent Testing 
+Built for Uptiq.ai Agent Testing
