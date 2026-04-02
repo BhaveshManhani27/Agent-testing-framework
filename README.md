@@ -167,7 +167,7 @@ cp .env.example .env
 Open `.env` and fill in your values:
 ```bash
 # Required — used by both agent and LLM judge
-GROQ_API_KEY=your-gemini-api-key-here
+GROQ_API_KEY=your-groq-api-key-here
 
 # Agent configuration
 AGENT_PROVIDER=gemini
