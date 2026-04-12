@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from src.evaluation.pipeline import PipelineResult
 from src.metrics.scorer import AgentScoreCard
@@ -18,7 +18,7 @@ class Reporter:
     def __init__(self, report_dir: str = "reports"):
         self.report_dir = Path(report_dir)
         self.report_dir.mkdir(exist_ok=True)
-        self.timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        self.timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
     def generate(
         self,

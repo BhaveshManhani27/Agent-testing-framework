@@ -66,7 +66,7 @@ class AsyncTestRunner:
 
             try:
                 # Run synchronous agent in thread pool
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 response = await loop.run_in_executor(
                     None, self.agent.run, test_case.input
                 )

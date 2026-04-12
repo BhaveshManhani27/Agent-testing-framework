@@ -56,6 +56,3 @@ class RateLimiter:
 
 # Groq free tier: 30 requests per minute
 RATE_LIMITER = RateLimiter(calls_per_minute=30)
-
-# Backward compatibility alias
-GEMINI_RATE_LIMITER = RATE_LIMITER

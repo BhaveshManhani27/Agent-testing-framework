@@ -42,7 +42,7 @@ Before starting, make sure you have:
 
 - Python 3.9 or higher
 - Git
-- An OpenAI API key (used only by the LLM judge — not your agent)
+- A Groq API key (used only by the LLM judge — not your agent, free tier works)
 - Your agent installed and working locally
 
 ---
@@ -50,7 +50,7 @@ Before starting, make sure you have:
 ## Step 1 — Clone and Set Up
 ```bash
 # Clone the framework
-git clone https://github.com/YOUR_USERNAME/Agent-testing-framework.git
+git clone https://github.com/BhaveshManhani27/Agent-testing-framework.git
 cd Agent-testing-framework
 
 # Create virtual environment
@@ -78,15 +78,15 @@ cp .env.example .env
 Open `.env` and fill in:
 ```bash
 # Required — used by the LLM judge only
-OPENAI_API_KEY=sk-your-openai-key-here
+GROQ_API_KEY=your-groq-api-key-here
 
-# Your agent's provider (for the judge)
-JUDGE_PROVIDER=openai
-JUDGE_MODEL=gpt-4o-mini
+# Judge configuration
+JUDGE_PROVIDER=groq
+JUDGE_MODEL=llama-3.3-70b-versatile
 ```
 
 > Your agent's API key stays completely private.
-> The framework only needs OpenAI for the judge —
+> The framework only needs Groq for the judge —
 > not to run your agent.
 
 ---
@@ -145,7 +145,7 @@ Open `main.py` and find this section:
 ```python
 # ── Step 4: Run agent ─────────────────────────────────────────────
 print("\nInitializing agent...")
-agent  = SimplechatAgent()
+agent  = SimpleChatAgent()
 ```
 
 Change it to:
@@ -582,4 +582,4 @@ test_cases = registry.get_by_severity("high")
 Open an issue on the GitHub repository
 or contact the maintainer directly.
 
-👉 [github.com/YOUR_USERNAME/agent-testing-framework](https://github.com/YOUR_USERNAME/agent-testing-framework)
+👉 [github.com/BhaveshManhani27/Agent-testing-framework](https://github.com/BhaveshManhani27/Agent-testing-framework)

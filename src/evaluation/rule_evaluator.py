@@ -279,9 +279,9 @@ class RuleEvaluator:
             )
 
         checks.append(SingleCheck(
-        name="response_present_check",
-        passed=True,
-        reason="Agent returned a non-empty response"
+            name="response_present_check",
+            passed=True,
+            reason="Agent returned a non-empty response"
         ))
 
         return RuleEvalResult(

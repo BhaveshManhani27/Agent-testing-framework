@@ -116,7 +116,7 @@ class ConsensusJudge:
       judges might be overconfident.
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash-lite"):
+    def __init__(self, model: str = "llama-3.3-70b-versatile"):
         self.model = model
 
         self.judges = [

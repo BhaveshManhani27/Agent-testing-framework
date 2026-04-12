@@ -23,10 +23,6 @@ PRICING = {
         "input": 0.05,
         "output": 0.08,
     },
-    "gemini-2.5-flash-lite": {
-        "input": 0.075,
-        "output": 0.30,
-    },
     "gpt-4o-mini": {
         "input": 0.15,
         "output": 0.60,

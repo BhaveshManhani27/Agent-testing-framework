@@ -170,11 +170,11 @@ Open `.env` and fill in your values:
 GROQ_API_KEY=your-groq-api-key-here
 
 # Agent configuration
-AGENT_PROVIDER=gemini
+AGENT_PROVIDER=groq
 AGENT_MODEL=llama-3.3-70b-versatile
 
 # Judge configuration
-JUDGE_PROVIDER=gemini
+JUDGE_PROVIDER=groq
 JUDGE_MODEL=llama-3.3-70b-versatile
 ```
 
@@ -416,7 +416,7 @@ It covers:
 | Component | Technology |
 |---|---|
 | Language | Python 3.9+ |
-| LLM Provider | Google Groq |
+| LLM Provider | Groq |
 | Data Validation | Pydantic |
 | Test Config | YAML |
 | Semantic Similarity | sentence-transformers (all-MiniLM-L6-v2) |

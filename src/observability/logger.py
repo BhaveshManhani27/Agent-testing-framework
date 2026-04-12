@@ -1,7 +1,7 @@
 import os
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 from src.evaluation.pipeline import PipelineResult
@@ -26,7 +26,7 @@ class RunLogger:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(exist_ok=True)
         self.run_id = str(uuid.uuid4())[:8]  
-        self.timestamp = datetime.utcnow().isoformat()
+        self.timestamp = datetime.now(timezone.utc).isoformat()
 
         self.detail_path = (
             self.log_dir / f"run_{self.run_id}.jsonl"
